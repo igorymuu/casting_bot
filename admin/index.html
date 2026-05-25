@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Casting Bot Admin</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;}
+:root{--bg:#0f172a;--card:rgba(30,41,59,.7);--primary:#3b82f6;--success:#10b981;--danger:#ef4444;--warning:#f59e0b;--text:#f8fafc;--muted:#94a3b8;--border:rgba(255,255,255,.08);}
+
+body{background:var(--bg);color:var(--text);min-height:100vh;background-image:radial-gradient(at 0% 0%,rgba(59,130,246,.1) 0px,transparent 50%),radial-gradient(at 100% 100%,rgba(139,92,246,.1) 0px,transparent 50%);}
+a{color:var(--primary);text-decoration:none;}
+
+/* LOGIN SCREEN */
+#login-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:1.5rem;}
+.login-box{background:var(--card);backdrop-filter:blur(16px);border:1px solid var(--border);border-radius:1.25rem;padding:2.5rem 2rem;width:100%;max-width:360px;text-align:center;}
+.login-box h1{font-size:1.5rem;margin-bottom:.5rem;}
+.login-box p{color:var(--muted);font-size:.875rem;margin-bottom:2rem;}
+.login-input{width:100%;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:.75rem;padding:.85rem 1rem;color:var(--text);font-size:1rem;outline:none;transition:border .2s;margin-bottom:1rem;}
+.login-input:focus{border-color:var(--primary);}
+.login-btn{width:100%;background:var(--primary);color:#fff;border:none;border-radius:.75rem;padding:.85rem;font-size:1rem;font-weight:600;cursor:pointer;transition:opacity .2s;}
+.login-btn:active{opacity:.8;}
+.login-error{color:#f87171;font-size:.85rem;margin-top:.75rem;display:none;}
+
+/* LAYOUT */
+#app{display:none;}
+.sidebar{padding:.75rem 1rem;background:var(--card);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
+.brand{font-size:1.1rem;font-weight:700;background:linear-gradient(to right,#60a5fa,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.nav-items{display:flex;gap:.5rem;}
+.nav-item{padding:.5rem .75rem;border-radius:.5rem;cursor:pointer;font-size:.8rem;font-weight:500;color:var(--muted);white-space:nowrap;transition:.2s;}
+.nav-item.active,.nav-item:active{background:rgba(59,130,246,.15);color:var(--primary);}
+
+.main{padding:1rem;max-width:1200px;margin:0 auto;}
+.page{display:none;}
+.page.active{display:block;}
+
+/* CARDS */
+.stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:.75rem;margin-bottom:1.5rem;}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:.875rem;padding:1rem;}
+.stat-title{color:var(--muted);font-size:.7rem;font-weight:500;text-transform:uppercase;letter-spacing:.03em;}
+.stat-value{font-size:1.5rem;font-weight:700;margin-top:.25rem;}
+
+.section-title{font-size:1.1rem;font-weight:600;margin-bottom:1rem;}
+
+/* USER CARDS (mobile friendly) */
+.user-card{background:var(--card);border:1px solid var(--border);border-radius:.875rem;padding:1rem;margin-bottom:.75rem;}
+.user-card-header{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.5rem;}
+.user-name{font-weight:600;font-size:.95rem;}
+.user-id{color:var(--muted);font-size:.75rem;font-family:monospace;}
+.user-city{color:var(--muted);font-size:.8rem;}
+.badge{padding:.2rem .6rem;border-radius:999px;font-size:.7rem;font-weight:500;}
+.badge-success{background:rgba(16,185,129,.12);color:var(--success);}
+.badge-danger{background:rgba(239,68,68,.12);color:var(--danger);}
+.badge-warning{background:rgba(245,158,11,.12);color:var(--warning);}
+
+.user-card-body{display:none;margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border);}
+.user-card-body.open{display:block;}
+
+.user-detail{font-size:.82rem;color:var(--muted);margin-bottom:.4rem;}
+.user-detail span{color:var(--text);font-weight:500;}
+.tag{display:inline-block;background:rgba(255,255,255,.05);padding:.2rem .5rem;border-radius:.3rem;font-size:.72rem;margin:2px;border:1px solid var(--border);}
+.tag.active{background:rgba(59,130,246,.12);border-color:var(--primary);color:var(--primary);}
+
+.actions{margin-top:.75rem;display:flex;gap:.5rem;flex-wrap:wrap;}
+.action-btn{background:var(--primary);color:#fff;border:none;border-radius:.5rem;padding:.5rem .85rem;font-size:.8rem;font-weight:500;cursor:pointer;transition:.2s;}
+.action-btn:active{opacity:.7;}
+.action-btn.danger{background:transparent;border:1px solid var(--danger);color:var(--danger);}
+.action-btn.success{background:transparent;border:1px solid var(--success);color:var(--success);}
+.action-btn.warning{background:transparent;border:1px solid var(--warning);color:var(--warning);}
+
+/* CHANNELS */
+.channel-card{background:var(--card);border:1px solid var(--border);border-radius:.875rem;padding:1rem;margin-bottom:.75rem;}
+.channel-header{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.5rem;}
+.channel-username{font-family:monospace;font-size:.9rem;color:#93c5fd;}
+.channel-actions{display:flex;gap:.5rem;}
+.channel-meta{color:var(--muted);font-size:.75rem;margin-top:.3rem;}
+
+.add-form{background:var(--card);border:1px solid var(--border);border-radius:.875rem;padding:1rem;margin-bottom:1rem;}
+.add-form h3{font-size:.85rem;font-weight:600;color:var(--muted);margin-bottom:.75rem;}
+.form-input{width:100%;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:.5rem;padding:.65rem .8rem;color:var(--text);font-size:.85rem;outline:none;transition:border .2s;margin-bottom:.5rem;}
+.form-input:focus{border-color:var(--primary);}
+.form-input::placeholder{color:var(--muted);}
+.form-row{display:flex;gap:.5rem;flex-wrap:wrap;}
+.form-row .form-input{flex:1;min-width:120px;}
+
+.empty{text-align:center;padding:2rem;color:var(--muted);font-size:.9rem;}
+.loading{text-align:center;padding:2rem;color:var(--muted);}
+
+/* DESKTOP */
+@media(min-width:768px){
+  body{display:flex;flex-direction:row;}
+  .sidebar{width:220px;flex-direction:column;align-items:flex-start;border-bottom:none;border-right:1px solid var(--border);padding:2rem 1.5rem;height:100vh;position:sticky;top:0;}
+  .nav-items{flex-direction:column;width:100%;gap:.25rem;margin-top:2rem;}
+  .nav-item{padding:.6rem 1rem;font-size:.9rem;width:100%;}
+  .main{padding:2rem;flex:1;}
+  .stats-grid{grid-template-columns:repeat(4,1fr);}
+  .user-card{padding:1.25rem;}
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-box">
+    <div style="font-size:2rem;margin-bottom:.5rem;">🎭</div>
+    <h1>Casting Bot</h1>
+    <p>Введите ключ доступа</p>
+    <input class="login-input" id="login-key" type="password" placeholder="Ключ администратора" onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="login-btn" onclick="doLogin()">Войти</button>
+    <div class="login-error" id="login-error">Неверный ключ</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="sidebar">
+    <div class="brand">Casting Bot</div>
+    <div class="nav-items">
+      <div class="nav-item active" id="nav-dashboard" onclick="showPage('dashboard')">📊 Дашборд</div>
+      <div class="nav-item" id="nav-users" onclick="showPage('users')">👥 Пользователи</div>
+      <div class="nav-item" id="nav-channels" onclick="showPage('channels')">📡 Каналы</div>
+    </div>
+  </div>
+  <div class="main">
+
+    <!-- DASHBOARD -->
+    <div class="page active" id="page-dashboard">
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-title">Пользователей</div><div class="stat-value" id="stat-users">—</div></div>
+        <div class="stat-card"><div class="stat-title">Профилей</div><div class="stat-value" id="stat-profiles">—</div></div>
+        <div class="stat-card"><div class="stat-title">Подписок</div><div class="stat-value" id="stat-subs">—</div></div>
+        <div class="stat-card"><div class="stat-title">Каналов</div><div class="stat-value" id="stat-channels">—</div></div>
+      </div>
+      <div class="section-title">📋 Последние пользователи</div>
+      <div id="dash-users"></div>
+    </div>
+
+    <!-- USERS -->
+    <div class="page" id="page-users">
+      <div class="section-title">👥 Все пользователи</div>
+      <div id="all-users"></div>
+    </div>
+
+    <!-- CHANNELS -->
+    <div class="page" id="page-channels">
+      <div class="section-title" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.5rem;">
+        <span>📡 Каналы парсинга</span>
+        <button class="action-btn warning" onclick="reloadBot()" id="reload-btn" style="font-size:.75rem;">🔄 Перезапустить</button>
+      </div>
+      <div class="add-form">
+        <h3>Добавить канал</h3>
+        <div class="form-row">
+          <input class="form-input" id="ch-name" placeholder="@username или https://t.me/...">
+          <input class="form-input" id="ch-title" placeholder="Название (необяз.)" style="flex:1">
+        </div>
+        <button class="action-btn" onclick="addChannel()" style="width:100%;margin-top:.5rem;">+ Добавить канал</button>
+      </div>
+      <div id="channels-list"></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const API='/api';
+let KEY=localStorage.getItem('cast_admin_key')||'';
+
+function q(p){return p+'?admin_key='+encodeURIComponent(KEY);}
+
+// LOGIN
+function doLogin(){
+  const k=document.getElementById('login-key').value.trim();
+  if(!k){return;}
+  KEY=k;
+  // Проверяем
+  fetch(q(API+'/stats')).then(r=>{
+    if(r.ok){
+      localStorage.setItem('cast_admin_key',k);
+      document.getElementById('login-screen').style.display='none';
+      document.getElementById('app').style.display='block';
+      loadStats();loadDashUsers();
+    }else{
+      document.getElementById('login-error').style.display='block';
+    }
+  }).catch(()=>{
+    document.getElementById('login-error').style.display='block';
+  });
+}
+
+// Если ключ уже сохранён — сразу логинимся
+if(KEY){
+  fetch(q(API+'/stats')).then(r=>{
+    if(r.ok){
+      document.getElementById('login-screen').style.display='none';
+      document.getElementById('app').style.display='block';
+      loadStats();loadDashUsers();
+    }else{
+      localStorage.removeItem('cast_admin_key');
+      KEY='';
+    }
+  }).catch(()=>{
+    localStorage.removeItem('cast_admin_key');
+    KEY='';
+  });
+}
+
+// NAV
+function showPage(n){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));
+  document.getElementById('page-'+n).classList.add('active');
+  document.getElementById('nav-'+n).classList.add('active');
+  if(n==='dashboard'){loadStats();loadDashUsers();}
+  if(n==='users'){loadAllUsers();}
+  if(n==='channels'){loadChannels();}
+}
+
+// STATS
+async function loadStats(){
+  try{
+    const d=await fetch(q(API+'/stats')).then(r=>r.json());
+    document.getElementById('stat-users').innerText=d.total_users;
+    document.getElementById('stat-profiles').innerText=d.total_profiles;
+    document.getElementById('stat-subs').innerText=d.active_subs;
+    document.getElementById('stat-channels').innerText=d.active_channels||'—';
+  }catch(e){}
+}
+
+// RENDER USERS
+function renderUser(u,container){
+  const card=document.createElement('div');card.className='user-card';
+  const isSub=u.subscription_active;
+  const bdg=isSub ? `<span class="badge badge-success">До ${new Date(u.subscription_end_date).toLocaleDateString()}</span>`
+                  : `<span class="badge badge-danger">Нет</span>`;
+  card.innerHTML=`
+    <div class="user-card-header" onclick="this.parentElement.querySelector('.user-card-body').classList.toggle('open')">
+      <div><div class="user-name">${u.full_name}</div><div class="user-id">${u.telegram_id}${u.username?' · @'+u.username:''}</div></div>
+      <div style="text-align:right"><div>${bdg}</div><div class="user-city">${u.city||'—'}</div></div>
+    </div>
+    <div class="user-card-body">
+      ${u.profile_details?`
+        <div class="user-detail">Пол: <span>${u.profile_details.gender||'—'}</span></div>
+        <div class="user-detail">Возраст: <span>${u.profile_details.playing_age||'—'}</span></div>
+        <div class="user-detail">Email: <span>${u.profile_details.email||'—'}</span></div>
+        <div class="user-detail">Гонорар: <span>от ${u.profile_details.min_fee||0} ₽</span></div>
+        <div style="margin-top:.5rem">
+          ${Object.entries(u.profile_details.projects||{}).map(([k,v])=>`<span class="tag ${v?'active':''}">${k}</span>`).join('')}
+        </div>
+        <div style="margin-top:.25rem">
+          ${Object.entries(u.profile_details.options||{}).map(([k,v])=>`<span class="tag ${v?'active':''}">${k}</span>`).join('')}
+        </div>
+      `:'<div style="color:var(--muted);font-size:.8rem">Анкета не заполнена</div>'}
+      <div class="actions">
+        <button class="action-btn success" onclick="addDays(${u.telegram_id},30,event)">+30 дн</button>
+        <button class="action-btn success" onclick="addDays(${u.telegram_id},90,event)">+90 дн</button>
+        <button class="action-btn danger" onclick="addDays(${u.telegram_id},-1,event)">❌ Отключить</button>
+      </div>
+    </div>`;
+  container.appendChild(card);
+}
+
+async function loadDashUsers(){
+  try{
+    const d=await fetch(q(API+'/users')).then(r=>r.json());
+    const el=document.getElementById('dash-users');el.innerHTML='';
+    d.users.slice(0,20).forEach(u=>renderUser(u,el));
+  }catch(e){document.getElementById('dash-users').innerHTML='<div class="loading">Ошибка загрузки</div>';}
+}
+
+async function loadAllUsers(){
+  try{
+    const d=await fetch(q(API+'/users')).then(r=>r.json());
+    const el=document.getElementById('all-users');el.innerHTML='';
+    if(!d.users.length){el.innerHTML='<div class="empty">Нет пользователей</div>';return;}
+    d.users.forEach(u=>renderUser(u,el));
+  }catch(e){document.getElementById('all-users').innerHTML='<div class="loading">Ошибка загрузки</div>';}
+}
+
+async function addDays(uid,days,ev){
+  ev.stopPropagation();
+  if(days>0 && !confirm('Добавить '+days+' дней?'))return;
+  if(days<0 && !confirm('Забрать доступ?'))return;
+  await fetch(q(API+'/users/'+uid+'/subscription'),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({days})});
+  loadStats();loadAllUsers();loadDashUsers();
+}
+
+// CHANNELS
+async function loadChannels(){
+  try{
+    const d=await fetch(q(API+'/channels')).then(r=>r.json());
+    const el=document.getElementById('channels-list');el.innerHTML='';
+    if(!d.channels.length){el.innerHTML='<div class="empty">Нет каналов. Добавьте первый!</div>';return;}
+    d.channels.forEach(ch=>{
+      const card=document.createElement('div');card.className='channel-card';
+      const badge=ch.is_active?'<span class="badge badge-success">Активен</span>':'<span class="badge badge-warning">Отключён</span>';
+      card.innerHTML=`
+        <div class="channel-header">
+          <div><div class="channel-username">@${ch.username}</div><div class="channel-meta">${ch.title||''}</div></div>
+          <div class="channel-actions">
+            <button class="action-btn ${ch.is_active?'warning':'success'}" onclick="toggleCh(${ch.id})" style="font-size:.75rem">${ch.is_active?'🔇 Откл':'🔊 Вкл'}</button>
+            <button class="action-btn danger" onclick="deleteCh(${ch.id})" style="font-size:.75rem">🗑</button>
+          </div>
+        </div>
+        <div class="channel-meta" style="margin-top:.5rem">
+          ${ch.is_active?badge:badge}
+          ${ch.notes?' · '+ch.notes:''}
+          ${ch.added_at?' · добавлен '+new Date(ch.added_at).toLocaleDateString():''}
+        </div>`;
+      el.appendChild(card);
+    });
+  }catch(e){document.getElementById('channels-list').innerHTML='<div class="loading">Ошибка</div>';}
+}
+
+async function addChannel(){
+  const u=document.getElementById('ch-name').value.trim();
+  const t=document.getElementById('ch-title').value.trim();
+  if(!u){alert('Введите ссылку');return;}
+  let name=u;
+  for(const p of ['https://t.me/','http://t.me/','t.me/','@']){if(name.startsWith(p)){name=name.slice(p.length);break;}}
+  name=name.replace(/\/$/,'');
+  const res=await fetch(q(API+'/channels'),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:name,title:t||name})});
+  if(res.status===409){alert('Канал уже добавлен!');return;}
+  if(!res.ok){try{const e=await res.json();alert(e.detail||'Ошибка');}catch(e){alert('Ошибка');}return;}
+  document.getElementById('ch-name').value='';document.getElementById('ch-title').value='';
+  loadChannels();loadStats();
+}
+
+async function toggleCh(id){
+  await fetch(q(API+'/channels/'+id+'/toggle'),{method:'POST'});loadChannels();loadStats();
+}
+async function deleteCh(id){
+  if(!confirm('Удалить канал?'))return;
+  await fetch(q(API+'/channels/'+id),{method:'DELETE'});loadChannels();loadStats();
+}
+
+async function reloadBot(){
+  const btn=document.getElementById('reload-btn');
+  if(!confirm('Перезапустить UserBot?'))return;
+  btn.disabled=true;btn.textContent='🔄 Перезапуск...';
+  try{
+    const res=await fetch('/api/reload-bot',{method:'POST'});
+    if(res.ok){btn.textContent='✅ Перезапущен!';}else{btn.textContent='❌ Ошибка';}
+  }catch(e){btn.textContent='❌ Ошибка';}
+  setTimeout(()=>{btn.textContent='🔄 Перезапустить';btn.disabled=false;},3000);
+}
+</script>
+</body>
+</html>
